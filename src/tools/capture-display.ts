@@ -11,6 +11,7 @@ import { z } from 'zod';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { logger } from '../logger.js';
 
 /**
  * Register the capture_display tool with the MCP server
@@ -40,19 +41,20 @@ export function registerCaptureDisplay(server: McpServer): void {
       try {
         const { display_id } = args;
 
-        console.error(`[capture_display] Capturing display(s)${display_id !== undefined ? ` ${display_id}` : ' (all)'}`);
+        logger.debug(`capture_display: Capturing display(s)`, { display_id: display_id ?? 'all' });
 
         // Get all monitors
         const monitors = Monitor.all();
 
         if (monitors.length === 0) {
+          logger.error('capture_display: No displays found');
           throw new McpError(
             ErrorCode.InternalError,
             'No displays found'
           );
         }
 
-        console.error(`[capture_display] Found ${monitors.length} display(s)`);
+        logger.debug(`capture_display: Found ${monitors.length} display(s)`);
 
         if (display_id !== undefined) {
           // Capture specific display
@@ -70,7 +72,7 @@ export function registerCaptureDisplay(server: McpServer): void {
           const pngBuffer = await image.toPng();
           fs.writeFileSync(outputFile, pngBuffer);
 
-          console.error(`[capture_display] Saved display ${display_id} to ${outputFile}`);
+          logger.info(`capture_display: Saved display screenshot`, { display_id, path: outputFile });
 
           const result = {
             success: true,
@@ -104,8 +106,10 @@ export function registerCaptureDisplay(server: McpServer): void {
               file_path: outputFile,
             });
 
-            console.error(`[capture_display] Saved display ${i} to ${outputFile}`);
+            logger.debug(`capture_display: Saved display ${i}`, { path: outputFile });
           }
+
+          logger.info(`capture_display: Saved all displays`, { count: captures.length });
 
           const result = {
             success: true,
@@ -123,12 +127,11 @@ export function registerCaptureDisplay(server: McpServer): void {
           };
         }
       } catch (error) {
-        console.error('[capture_display] Error:', error);
-
         if (error instanceof McpError) {
           throw error;
         }
 
+        logger.error('capture_display: Failed to capture display', error);
         throw new McpError(
           ErrorCode.InternalError,
           `Failed to capture display: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -137,5 +140,5 @@ export function registerCaptureDisplay(server: McpServer): void {
     }
   );
 
-  console.error('[capture_display] Tool registered');
+  logger.info('Tool registered: capture_display');
 }

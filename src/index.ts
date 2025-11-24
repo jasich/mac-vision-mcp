@@ -10,6 +10,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createServer } from './server.js';
 import { checkPermissions } from './permissions.js';
+import { logger } from './logger.js';
 
 async function main() {
   try {
@@ -23,21 +24,21 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    console.error('[mac-vision-mcp] Server started successfully');
+    logger.info('Server started successfully');
   } catch (error) {
-    console.error('[mac-vision-mcp] Fatal error:', error);
+    logger.error('Fatal error during startup', error);
     process.exit(1);
   }
 }
 
 // Handle clean shutdown
 process.on('SIGINT', () => {
-  console.error('[mac-vision-mcp] Shutting down...');
+  logger.info('Shutting down (SIGINT)');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.error('[mac-vision-mcp] Shutting down...');
+  logger.info('Shutting down (SIGTERM)');
   process.exit(0);
 });
 

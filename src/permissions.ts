@@ -5,6 +5,7 @@
  */
 
 import { hasScreenCapturePermission } from 'mac-screen-capture-permissions';
+import { logger } from './logger.js';
 
 export async function checkPermissions(): Promise<void> {
   if (!hasScreenCapturePermission()) {
@@ -14,8 +15,9 @@ export async function checkPermissions(): Promise<void> {
     console.error('  2. Go to Privacy & Security > Screen Recording');
     console.error('  3. Enable permission for this app');
     console.error('  4. Restart the MCP server\n');
+    logger.error('Screen Recording permission not granted');
     throw new Error('Screen Recording permission not granted');
   }
 
-  console.error('✅ Screen Recording permission granted');
+  logger.info('Screen Recording permission granted');
 }

@@ -10,6 +10,7 @@ import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { openWindows } from 'get-windows';
 import { z } from 'zod';
 import type { WindowInfo } from '../types.js';
+import { logger } from '../logger.js';
 
 /**
  * Register the list_windows tool with the MCP server
@@ -40,12 +41,12 @@ export function registerListWindows(server: McpServer): void {
     },
     async (_args: {}, _extra: any) => {
       try {
-        console.error('[list_windows] Fetching window list...');
+        logger.debug('list_windows: Fetching window list');
 
         // Get all windows using get-windows
         const windows = await openWindows();
 
-        console.error(`[list_windows] Found ${windows.length} windows`);
+        logger.debug(`list_windows: Found ${windows.length} windows`);
 
         // Filter out system windows and overlays, then map to our WindowInfo format
         const windowList: WindowInfo[] = windows
@@ -76,7 +77,7 @@ export function registerListWindows(server: McpServer): void {
             display: window.bounds.x >= 0 ? 0 : 1,
           }));
 
-        console.error(`[list_windows] Filtered to ${windowList.length} user windows`);
+        logger.info(`list_windows: Filtered to ${windowList.length} user windows`);
 
         const result = { windows: windowList };
 
@@ -90,7 +91,7 @@ export function registerListWindows(server: McpServer): void {
           structuredContent: result,
         };
       } catch (error) {
-        console.error('[list_windows] Error:', error);
+        logger.error('list_windows: Failed to list windows', error);
         throw new McpError(
           ErrorCode.InternalError,
           `Failed to list windows: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -99,5 +100,5 @@ export function registerListWindows(server: McpServer): void {
     }
   );
 
-  console.error('[list_windows] Tool registered');
+  logger.info('Tool registered: list_windows');
 }

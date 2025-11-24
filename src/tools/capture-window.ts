@@ -12,6 +12,7 @@ import { z } from 'zod';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { logger } from '../logger.js';
 
 /**
  * Register the capture_window tool with the MCP server
@@ -41,42 +42,64 @@ export function registerCaptureWindow(server: McpServer): void {
       try {
         const { window_id, mode = 'full', output_path } = args;
 
-        console.error(`[capture_window] Capturing window ${window_id} (mode: ${mode})`);
+        logger.debug(`capture_window: Capturing window ${window_id}`, { mode });
 
         // Find window in node-screenshots
         const windows = Window.all();
         const targetWindow = windows.find((w) => String(w.id) === window_id);
 
         if (!targetWindow) {
+          logger.warn(`capture_window: Window ${window_id} not found`);
           throw new McpError(
             ErrorCode.InvalidRequest,
             `Window ${window_id} not found. It may have been closed.`
           );
         }
 
-        console.error(`[capture_window] Found window, capturing...`);
+        logger.debug(`capture_window: Found window, capturing...`);
 
         // Capture screenshot
         // Note: node-screenshots doesn't distinguish between full/content modes
         // Both will capture the full window including decorations
         const image = targetWindow.captureImageSync();
 
-        // Determine output path
-        const outputFile = output_path || path.join(os.tmpdir(), `screenshot_${window_id}.png`);
-
-        // Ensure directory exists if custom path specified
+        // Determine output path with sanitization
+        let outputFile: string;
         if (output_path) {
-          const dir = path.dirname(output_path);
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+          // Resolve to absolute path and normalize
+          const resolvedPath = path.resolve(output_path);
+
+          // Basic validation: must be a .png file
+          if (!resolvedPath.endsWith('.png')) {
+            throw new McpError(
+              ErrorCode.InvalidRequest,
+              'Output path must end with .png'
+            );
           }
+
+          // Ensure directory exists
+          const dir = path.dirname(resolvedPath);
+          try {
+            if (!fs.existsSync(dir)) {
+              fs.mkdirSync(dir, { recursive: true });
+            }
+          } catch (err) {
+            throw new McpError(
+              ErrorCode.InvalidRequest,
+              `Cannot create directory: ${dir}`
+            );
+          }
+
+          outputFile = resolvedPath;
+        } else {
+          outputFile = path.join(os.tmpdir(), `screenshot_${window_id}.png`);
         }
 
         // Save image as PNG
         const pngBuffer = await image.toPng();
         fs.writeFileSync(outputFile, pngBuffer);
 
-        console.error(`[capture_window] Saved to ${outputFile}`);
+        logger.info(`capture_window: Saved screenshot`, { window_id, path: outputFile });
 
         // Get rich metadata from get-windows
         const allWindows = await openWindows();
@@ -102,12 +125,11 @@ export function registerCaptureWindow(server: McpServer): void {
           structuredContent: result,
         };
       } catch (error) {
-        console.error('[capture_window] Error:', error);
-
         if (error instanceof McpError) {
           throw error;
         }
 
+        logger.error('capture_window: Failed to capture window', error);
         throw new McpError(
           ErrorCode.InternalError,
           `Failed to capture window: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -116,5 +138,5 @@ export function registerCaptureWindow(server: McpServer): void {
     }
   );
 
-  console.error('[capture_window] Tool registered');
+  logger.info('Tool registered: capture_window');
 }
