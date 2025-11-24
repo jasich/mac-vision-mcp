@@ -1,7 +1,7 @@
 # Implementation Plan: mac-vision-mcp
 
 **Last Updated:** November 24, 2025
-**Status:** Phase 3 Complete - Ready for Phase 4
+**Status:** Phase 4 Complete - Ready for Phase 5
 **Architecture:** Pure TypeScript/Node.js with native addons
 
 ---
@@ -219,38 +219,38 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ### Tasks
 
-- [ ] Define display types (`src/types.ts`)
-  - [ ] `CaptureDisplayParams` (display_id optional)
-  - [ ] `CaptureDisplayResponse` (success, file_path, display)
-  - [ ] `MultiDisplayResponse` (success, captures array)
-- [ ] Implement capture_display tool (`src/tools/capture-display.ts`)
-  - [ ] Import `Monitor` from node-screenshots
-  - [ ] Define Zod schema with optional display_id
-  - [ ] Implement handler function
-  - [ ] Get all monitors with `Monitor.all()`
-  - [ ] Handle single display case
-  - [ ] Handle all displays case (default)
-  - [ ] Capture each display with `captureImageSync()`
-  - [ ] Save to temp directory with display index
-  - [ ] Return appropriate response format
-  - [ ] Wrap in try/catch with McpError
-  - [ ] Export `registerCaptureDisplay(server)` function
-- [ ] Register tool in server (`src/server.ts`)
-  - [ ] Import `registerCaptureDisplay`
-  - [ ] Call registration in `createServer()`
-- [ ] Test single display capture
-  - [ ] Capture display 0
-  - [ ] Verify file created
-  - [ ] Check image matches primary display
-- [ ] Test all displays capture
-  - [ ] Capture without display_id parameter
-  - [ ] Verify one file per display
-  - [ ] Check each image matches correct display
-- [ ] Test multi-monitor setup
-  - [ ] Test with 2+ displays connected
-  - [ ] Verify display numbering
-  - [ ] Check negative coordinates handled
-  - [ ] Test with different orientations
+- [x] Define display types (`src/types.ts`)
+  - [x] `CaptureDisplayParams` (display_id optional)
+  - [x] `CaptureDisplayResponse` (success, file_path, display)
+  - [x] `MultiDisplayResponse` (success, captures array)
+- [x] Implement capture_display tool (`src/tools/capture-display.ts`)
+  - [x] Import `Monitor` from node-screenshots
+  - [x] Define Zod schema with optional display_id
+  - [x] Implement handler function
+  - [x] Get all monitors with `Monitor.all()`
+  - [x] Handle single display case
+  - [x] Handle all displays case (default)
+  - [x] Capture each display with `captureImageSync()` and await toPng()
+  - [x] Save to temp directory with display index
+  - [x] Return appropriate response format
+  - [x] Wrap in try/catch with McpError
+  - [x] Export `registerCaptureDisplay(server)` function
+- [x] Register tool in server (`src/server.ts`)
+  - [x] Import `registerCaptureDisplay`
+  - [x] Call registration in `createServer()`
+- [x] Test single display capture
+  - [x] Capture display 0
+  - [x] Verify file created
+  - [x] Check image matches primary display
+- [x] Test all displays capture
+  - [x] Capture without display_id parameter
+  - [x] Verify one file per display
+  - [x] Check each image matches correct display
+- [x] Test multi-monitor setup
+  - [x] Test with 2+ displays connected
+  - [x] Verify display numbering
+  - [x] Check negative coordinates handled
+  - [x] Test with different orientations
 
 ---
 
