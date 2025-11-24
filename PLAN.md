@@ -1,0 +1,599 @@
+# Implementation Plan: mac-vision-mcp
+
+**Last Updated:** November 24, 2025
+**Status:** Phase 0 Complete - Ready for Phase 1
+**Architecture:** Pure TypeScript/Node.js with native addons
+
+---
+
+## Overview
+
+Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers testable functionality, enabling iterative development and validation.
+
+**Tech Stack:**
+- @modelcontextprotocol/sdk (^1.22.0)
+- node-screenshots (^0.2.4)
+- get-windows (^9.2.3)
+- mac-screen-capture-permissions (^2.1.0)
+- zod (^3.25.0)
+
+---
+
+## Phase 0: Project Setup & Scaffolding
+
+**Objective:** Initialize TypeScript project with proper tooling and structure.
+
+**Deliverable:** Buildable TypeScript project with all dependencies installed.
+
+**Testing:** `npm run build` succeeds, dependencies resolve correctly.
+
+### Tasks
+- [x] Create GitHub repository
+  - [x] Initialize git repo
+  - [x] Create `.gitignore`
+- [x] Initialize npm package
+  - [x] Create `package.json` with metadata
+  - [x] Set `bin` entry point to `./dist/index.js`
+  - [x] Configure `engines: node >= 16.0.0`
+  - [x] Set `os: ["darwin"]` and `cpu: ["x64", "arm64"]`
+  - [x] Add `files` array for distribution
+- [x] Install core dependencies
+  - [x] `npm install @modelcontextprotocol/sdk zod`
+  - [x] `npm install node-screenshots get-windows`
+  - [x] `npm install mac-screen-capture-permissions`
+- [x] Install dev dependencies
+  - [x] `npm install -D typescript @types/node`
+  - [x] `npm install -D tsx` (for development)
+- [x] Configure TypeScript
+  - [x] Create `tsconfig.json`
+  - [x] Target ES2020, module ESNext
+  - [x] Configure output to `dist/`
+  - [x] Enable strict mode
+  - [x] Set `moduleResolution: "bundler"`
+- [x] Setup build scripts
+  - [x] Add `build` script: `tsc`
+  - [x] Add `dev` script: `tsx watch src/index.ts`
+  - [x] Add `start` script: `node dist/index.js`
+- [x] Create source structure
+  - [x] `src/index.ts` (entry point)
+  - [x] `src/server.ts` (MCP server setup)
+  - [x] `src/permissions.ts` (permission checks)
+  - [x] `src/tools/` (tool implementations)
+  - [x] `src/types.ts` (shared types)
+- [x] Add shebang to entry point
+  - [x] `#!/usr/bin/env node` in compiled output
+
+---
+
+## Phase 1: Permission Handling & Basic MCP Server
+
+**Objective:** Establish MCP server foundation with permission checks.
+
+**Deliverable:** MCP server that starts via stdio, checks permissions, and responds to ping.
+
+**Testing:**
+- Manual: Run server via stdio, verify permission check
+- Integration: Connect with Claude Code/Cursor, verify server appears
+
+### Tasks
+
+- [ ] Implement permission checking (`src/permissions.ts`)
+  - [ ] Import `hasScreenCapturePermission`
+  - [ ] Check permission on startup
+  - [ ] Display helpful error message if denied
+  - [ ] Log success message to stderr
+  - [ ] Export `checkPermissions()` function
+- [ ] Implement MCP server setup (`src/server.ts`)
+  - [ ] Create `McpServer` instance
+  - [ ] Configure server name: `mac-vision-mcp`
+  - [ ] Set version from package.json
+  - [ ] Export `createServer()` function
+- [ ] Implement main entry point (`src/index.ts`)
+  - [ ] Import server creation and permissions
+  - [ ] Call `checkPermissions()` on startup
+  - [ ] Create server instance
+  - [ ] Setup `StdioServerTransport`
+  - [ ] Connect server to transport
+  - [ ] Handle SIGINT for clean shutdown
+  - [ ] Catch and log fatal errors
+- [ ] Test server startup
+  - [ ] Build project: `npm run build`
+  - [ ] Run directly: `node dist/index.js`
+  - [ ] Verify permission check executes
+  - [ ] Verify no permission errors if granted
+- [ ] Test MCP integration
+  - [ ] Add to `.claude.json` or `mcp.json`
+  - [ ] Restart Claude Code/Cursor
+  - [ ] Verify server appears in MCP list
+  - [ ] Check stderr logs for startup messages
+
+---
+
+## Phase 2: Window Listing Tool
+
+**Objective:** Implement `list_windows` tool with rich metadata.
+
+**Deliverable:** Working tool that returns all open windows with title, app, bounds.
+
+**Testing:**
+- MCP: Call `list_windows` from Claude Code
+- Verify: Returns window list with correct metadata
+- Edge cases: Multiple displays, minimized windows
+
+### Tasks
+
+- [ ] Define window types (`src/types.ts`)
+  - [ ] `WindowInfo` interface (id, title, app, bounds, display)
+  - [ ] `Bounds` interface (x, y, width, height)
+  - [ ] `ListWindowsResponse` interface
+- [ ] Implement list_windows tool (`src/tools/list-windows.ts`)
+  - [ ] Import `openWindows` from get-windows
+  - [ ] Define Zod schema (no parameters)
+  - [ ] Implement handler function
+  - [ ] Call `openWindows()` to get window list
+  - [ ] Map to standard WindowInfo format
+  - [ ] Calculate display index from bounds (optional)
+  - [ ] Return JSON with windows array
+  - [ ] Wrap in try/catch with McpError
+  - [ ] Export `registerListWindows(server)` function
+- [ ] Register tool in server (`src/server.ts`)
+  - [ ] Import `registerListWindows`
+  - [ ] Call registration in `createServer()`
+- [ ] Test window listing
+  - [ ] Open multiple app windows (Chrome, Terminal, etc.)
+  - [ ] Call `list_windows` via MCP client
+  - [ ] Verify all windows returned
+  - [ ] Check metadata accuracy (title, app name)
+  - [ ] Verify bounds are reasonable
+- [ ] Test edge cases
+  - [ ] Minimized windows (should/shouldn't appear?)
+  - [ ] Hidden windows
+  - [ ] Multiple monitors (negative x/y values)
+  - [ ] Windows without titles
+
+---
+
+## Phase 3: Window Capture Tool
+
+**Objective:** Implement `capture_window` tool for individual window screenshots.
+
+**Deliverable:** Working tool that captures window by ID, saves to temp directory.
+
+**Testing:**
+- MCP: List windows, then capture specific window
+- Verify: Screenshot file created, matches window
+- Edge cases: Window closed, minimized, moved
+
+### Tasks
+
+- [ ] Define capture types (`src/types.ts`)
+  - [ ] `CaptureWindowParams` (window_id, mode, output_path)
+  - [ ] `CaptureWindowResponse` (success, file_path, window)
+  - [ ] `CaptureMode` enum/type ('full' | 'content')
+- [ ] Implement capture_window tool (`src/tools/capture-window.ts`)
+  - [ ] Import `Window` from node-screenshots
+  - [ ] Import `openWindows` from get-windows (for metadata)
+  - [ ] Define Zod schema with parameters
+  - [ ] Implement handler function
+  - [ ] Find window by ID in `Window.all()`
+  - [ ] Handle window not found error
+  - [ ] Capture image with `captureImageSync()`
+  - [ ] Determine output path (temp dir if not specified)
+  - [ ] Save PNG with `fs.writeFileSync()`
+  - [ ] Get rich metadata from get-windows
+  - [ ] Return success response with file path
+  - [ ] Wrap in try/catch with McpError
+  - [ ] Export `registerCaptureWindow(server)` function
+- [ ] Register tool in server (`src/server.ts`)
+  - [ ] Import `registerCaptureWindow`
+  - [ ] Call registration in `createServer()`
+- [ ] Test window capture
+  - [ ] List windows to get valid window ID
+  - [ ] Capture specific window
+  - [ ] Verify file created at returned path
+  - [ ] Open image and verify it matches window
+  - [ ] Check image dimensions match window bounds
+- [ ] Test error handling
+  - [ ] Capture with invalid window ID
+  - [ ] Close window between list and capture
+  - [ ] Capture minimized window
+  - [ ] Custom output path (valid and invalid)
+- [ ] Test Retina displays
+  - [ ] Verify image resolution (2x physical pixels)
+  - [ ] Check `scaleFactor` handling
+  - [ ] Ensure image quality acceptable
+
+---
+
+## Phase 4: Display Capture Tool
+
+**Objective:** Implement `capture_display` tool for full screen captures.
+
+**Deliverable:** Working tool that captures entire display(s).
+
+**Testing:**
+- MCP: Capture display 0, capture all displays
+- Verify: Screenshot files created for correct displays
+- Multi-monitor: Test with 2+ displays
+
+### Tasks
+
+- [ ] Define display types (`src/types.ts`)
+  - [ ] `CaptureDisplayParams` (display_id optional)
+  - [ ] `CaptureDisplayResponse` (success, file_path, display)
+  - [ ] `MultiDisplayResponse` (success, captures array)
+- [ ] Implement capture_display tool (`src/tools/capture-display.ts`)
+  - [ ] Import `Monitor` from node-screenshots
+  - [ ] Define Zod schema with optional display_id
+  - [ ] Implement handler function
+  - [ ] Get all monitors with `Monitor.all()`
+  - [ ] Handle single display case
+  - [ ] Handle all displays case (default)
+  - [ ] Capture each display with `captureImageSync()`
+  - [ ] Save to temp directory with display index
+  - [ ] Return appropriate response format
+  - [ ] Wrap in try/catch with McpError
+  - [ ] Export `registerCaptureDisplay(server)` function
+- [ ] Register tool in server (`src/server.ts`)
+  - [ ] Import `registerCaptureDisplay`
+  - [ ] Call registration in `createServer()`
+- [ ] Test single display capture
+  - [ ] Capture display 0
+  - [ ] Verify file created
+  - [ ] Check image matches primary display
+- [ ] Test all displays capture
+  - [ ] Capture without display_id parameter
+  - [ ] Verify one file per display
+  - [ ] Check each image matches correct display
+- [ ] Test multi-monitor setup
+  - [ ] Test with 2+ displays connected
+  - [ ] Verify display numbering
+  - [ ] Check negative coordinates handled
+  - [ ] Test with different orientations
+
+---
+
+## Phase 5: Error Handling & Polish
+
+**Objective:** Robust error handling, logging, and edge case coverage.
+
+**Deliverable:** Production-ready error handling with clear user feedback.
+
+**Testing:**
+- Trigger various error conditions
+- Verify clear, actionable error messages
+- Check stderr logging useful for debugging
+
+### Tasks
+
+- [ ] Enhance error handling
+  - [ ] Add custom error types/codes
+  - [ ] Improve error messages for common issues
+  - [ ] Add error context (window ID, display ID)
+  - [ ] Ensure all errors logged to stderr
+  - [ ] Return user-friendly messages via MCP
+- [ ] Add logging utility (`src/logger.ts`)
+  - [ ] Structured logging to stderr
+  - [ ] Log levels (info, error, debug)
+  - [ ] Prefix with `[mac-vision-mcp]`
+  - [ ] Include timestamps
+- [ ] Improve permission handling
+  - [ ] Better first-run messaging
+  - [ ] Detect permission state without triggering
+  - [ ] Provide System Preferences instructions
+  - [ ] Handle permission revoked during runtime
+- [ ] Add input validation
+  - [ ] Validate window_id format
+  - [ ] Validate display_id range
+  - [ ] Validate output_path permissions
+  - [ ] Sanitize file paths
+- [ ] Handle edge cases
+  - [ ] Window closed between operations
+  - [ ] Window moved/resized during capture
+  - [ ] Insufficient disk space
+  - [ ] Invalid temp directory
+  - [ ] Zero-size windows
+  - [ ] Offscreen windows
+- [ ] Add timeout protection
+  - [ ] Set reasonable timeouts for capture operations
+  - [ ] Handle hung capture gracefully
+- [ ] Test error scenarios systematically
+  - [ ] Document each error case
+  - [ ] Verify error messages clear
+  - [ ] Check recovery behavior
+
+---
+
+## Phase 6: Testing & Validation
+
+**Objective:** Comprehensive testing across macOS versions and architectures.
+
+**Deliverable:** Validated functionality on target platforms.
+
+**Testing:**
+- macOS 12, 13, 14, 15
+- Intel and Apple Silicon
+- Various window managers and apps
+- Multi-monitor configurations
+
+### Tasks
+
+- [ ] Platform testing matrix
+  - [ ] Test on macOS 12 (Monterey)
+  - [ ] Test on macOS 13 (Ventura)
+  - [ ] Test on macOS 14 (Sonoma)
+  - [ ] Test on macOS 15 (Sequoia)
+  - [ ] Test on Intel Mac
+  - [ ] Test on Apple Silicon Mac
+- [ ] Application compatibility testing
+  - [ ] Chrome/Chromium windows
+  - [ ] Safari windows
+  - [ ] Terminal/iTerm windows
+  - [ ] Electron apps (VS Code, etc.)
+  - [ ] Native macOS apps
+  - [ ] Full-screen apps
+- [ ] MCP client testing
+  - [ ] Test with Claude Code
+  - [ ] Test with Cursor
+  - [ ] Test with custom MCP client
+  - [ ] Verify tool discovery
+  - [ ] Check parameter passing
+  - [ ] Validate response format
+- [ ] Performance testing
+  - [ ] Window listing < 500ms
+  - [ ] Window capture < 2s
+  - [ ] Display capture < 3s
+  - [ ] Memory usage reasonable
+  - [ ] No memory leaks
+- [ ] Stress testing
+  - [ ] 50+ windows open
+  - [ ] Rapid consecutive captures
+  - [ ] Very large displays (5K+)
+  - [ ] Multiple displays (3+)
+- [ ] Document test results
+  - [ ] Create test matrix spreadsheet
+  - [ ] Note any platform-specific issues
+  - [ ] Document workarounds
+
+---
+
+## Phase 7: Documentation & Examples
+
+**Objective:** Complete documentation for users and developers.
+
+**Deliverable:** README, usage examples, troubleshooting guide.
+
+**Testing:**
+- Follow documentation as new user
+- Verify all examples work
+- Check links valid
+
+### Tasks
+
+- [ ] Write README.md
+  - [ ] Project description
+  - [ ] Features list
+  - [ ] Installation instructions (`npm install -g`)
+  - [ ] Quick start guide
+  - [ ] MCP client configuration (Claude Code, Cursor)
+  - [ ] Tool documentation (list_windows, capture_window, capture_display)
+  - [ ] Parameter descriptions
+  - [ ] Response format examples
+  - [ ] System requirements
+  - [ ] Permission setup instructions
+  - [ ] Troubleshooting section
+  - [ ] Contributing guidelines
+  - [ ] License (MIT)
+- [ ] Create usage examples
+  - [ ] Example: List all windows
+  - [ ] Example: Capture Chrome window
+  - [ ] Example: Capture display
+  - [ ] Example: Natural language workflow
+  - [ ] Example: Error handling
+- [ ] Write troubleshooting guide
+  - [ ] Permission denied errors
+  - [ ] Window not found errors
+  - [ ] Native module issues
+  - [ ] macOS version compatibility
+  - [ ] Multi-monitor issues
+  - [ ] Retina display problems
+- [ ] Add inline code documentation
+  - [ ] JSDoc comments for public APIs
+  - [ ] Document complex functions
+  - [ ] Add usage examples in comments
+- [ ] Create CHANGELOG.md
+  - [ ] Version 1.0.0 initial release notes
+  - [ ] Feature list
+  - [ ] Known issues
+- [ ] Add LICENSE file
+  - [ ] MIT license text
+- [ ] Add .gitignore
+  - [ ] node_modules
+  - [ ] dist/
+  - [ ] *.log
+  - [ ] .DS_Store
+
+---
+
+## Phase 8: Publishing & Distribution
+
+**Objective:** Publish to npm, create release.
+
+**Deliverable:** Published npm package, GitHub release.
+
+**Testing:**
+- Install from npm in clean environment
+- Verify all features work
+- Check package size reasonable
+
+### Tasks
+
+- [ ] Pre-publish checklist
+  - [ ] Version number set (1.0.0)
+  - [ ] All tests passing
+  - [ ] Documentation complete
+  - [ ] LICENSE file present
+  - [ ] README.md polished
+  - [ ] package.json metadata complete
+  - [ ] Keywords for npm search
+- [ ] Prepare npm package
+  - [ ] Run `npm pack` to preview
+  - [ ] Check included files
+  - [ ] Verify package size < 10MB
+  - [ ] Test local install: `npm install -g ./mac-vision-mcp-1.0.0.tgz`
+- [ ] Setup npm account
+  - [ ] Create/login to npm account
+  - [ ] Setup 2FA
+  - [ ] Verify email
+- [ ] Publish to npm
+  - [ ] Run `npm publish`
+  - [ ] Verify package appears on npmjs.com
+  - [ ] Test install: `npm install -g mac-vision-mcp`
+  - [ ] Test via npx: `npx -y mac-vision-mcp`
+- [ ] GitHub updates
+  - [ ] Add remote origin
+  - [ ] Push code
+  - [ ] Add description and topics
+- [ ] Create GitHub release
+  - [ ] Tag version v1.0.0
+  - [ ] Write release notes
+  - [ ] Attach tarball (optional)
+  - [ ] Mark as latest release
+- [ ] Post-publish verification
+  - [ ] Fresh install on clean Mac
+  - [ ] Follow README instructions
+  - [ ] Verify all features work
+  - [ ] Test with Claude Code
+
+---
+
+## Optional: Phase 9: Future Enhancements
+
+**Objective:** Post-v1.0 improvements based on feedback.
+
+**Deliverable:** Enhanced features and optimizations.
+
+### Potential Tasks
+
+- [ ] Advanced features
+  - [ ] OCR text extraction from screenshots
+  - [ ] Window content change detection
+  - [ ] Screen recording support
+  - [ ] Browser tab-specific capture
+  - [ ] Active window capture shortcut
+  - [ ] Clipboard integration
+- [ ] Configuration options
+  - [ ] Config file support (.mac-vision-mcp.json)
+  - [ ] Custom temp directory
+  - [ ] Screenshot format options (JPEG, WebP)
+  - [ ] Quality settings
+  - [ ] Auto-cleanup settings
+- [ ] Performance optimizations
+  - [ ] Cache window list briefly
+  - [ ] Async capture with promises
+  - [ ] Parallel display capture
+  - [ ] Image compression options
+- [ ] Cross-platform support
+  - [ ] Windows support (if feasible)
+  - [ ] Linux support (Wayland/X11)
+- [ ] Developer tools
+  - [ ] Debug mode flag
+  - [ ] Verbose logging option
+  - [ ] Performance metrics
+  - [ ] Health check endpoint
+- [ ] Alternative distribution
+  - [ ] Homebrew formula
+  - [ ] Standalone binary (pkg)
+  - [ ] Docker container (for testing)
+
+---
+
+## Development Guidelines
+
+### Code Standards
+- TypeScript strict mode
+- ESM modules
+- Async/await for I/O
+- Descriptive variable names
+- Single responsibility functions
+- Comprehensive error handling
+
+### Logging Standards
+- All logging to stderr only
+- Never write to stdout (reserved for MCP)
+- Prefix: `[mac-vision-mcp]`
+- Include context in errors (window ID, file path)
+
+### Testing Standards
+- Test after each phase
+- Document test results
+- Keep test notes in TESTING.md
+- Real-world scenarios over mocks
+
+### Git Workflow
+- Commit after each completed phase
+- Descriptive commit messages
+- Tag releases with semantic versions
+
+---
+
+## Success Criteria
+
+### Phase Completion
+Each phase complete when:
+- All tasks checked off
+- Testing completed successfully
+- No blocking bugs
+- Documentation updated
+
+### v1.0 Release Criteria
+- All Phase 0-8 tasks complete
+- Works on macOS 12+
+- Works on Intel and Apple Silicon
+- Published to npm
+- Documentation complete
+- At least 3 successful test installations
+
+---
+
+## Timeline Estimate
+
+| Phase | Estimated Time | Dependencies |
+|-------|---------------|--------------|
+| Phase 0 | 2-3 hours | None |
+| Phase 1 | 3-4 hours | Phase 0 |
+| Phase 2 | 4-5 hours | Phase 1 |
+| Phase 3 | 5-6 hours | Phase 2 |
+| Phase 4 | 3-4 hours | Phase 3 |
+| Phase 5 | 4-5 hours | Phases 2-4 |
+| Phase 6 | 6-8 hours | All above |
+| Phase 7 | 4-5 hours | Phase 6 |
+| Phase 8 | 2-3 hours | Phase 7 |
+| **Total** | **33-43 hours** | ~1-2 weeks full-time |
+
+---
+
+## Risk Mitigation
+
+| Risk | Mitigation |
+|------|-----------|
+| node-screenshots issues | Test early, have fallback plan |
+| Permission UX confusion | Excellent error messages, clear docs |
+| Native addon build problems | Use prebuilt binaries, document requirements |
+| macOS API deprecation | Monitor Apple docs, plan migration path |
+| MCP protocol changes | Pin SDK version, monitor updates |
+
+---
+
+## Notes
+
+- Prioritize iterative testing over big-bang release
+- Get user feedback early (alpha testers)
+- Document unexpected issues immediately
+- Keep RESEARCH.md updated with new findings
+- Consider security implications of screenshot access
+- Plan for maintenance and updates
+
+---
+
+**Ready for Phase 0 implementation.**
