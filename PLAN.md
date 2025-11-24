@@ -1,7 +1,7 @@
 # Implementation Plan: mac-vision-mcp
 
 **Last Updated:** November 24, 2025
-**Status:** Phase 2 Complete - Ready for Phase 3
+**Status:** Phase 3 Complete - Ready for Phase 4
 **Architecture:** Pure TypeScript/Node.js with native addons
 
 ---
@@ -167,42 +167,42 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ### Tasks
 
-- [ ] Define capture types (`src/types.ts`)
-  - [ ] `CaptureWindowParams` (window_id, mode, output_path)
-  - [ ] `CaptureWindowResponse` (success, file_path, window)
-  - [ ] `CaptureMode` enum/type ('full' | 'content')
-- [ ] Implement capture_window tool (`src/tools/capture-window.ts`)
-  - [ ] Import `Window` from node-screenshots
-  - [ ] Import `openWindows` from get-windows (for metadata)
-  - [ ] Define Zod schema with parameters
-  - [ ] Implement handler function
-  - [ ] Find window by ID in `Window.all()`
-  - [ ] Handle window not found error
-  - [ ] Capture image with `captureImageSync()`
-  - [ ] Determine output path (temp dir if not specified)
-  - [ ] Save PNG with `fs.writeFileSync()`
-  - [ ] Get rich metadata from get-windows
-  - [ ] Return success response with file path
-  - [ ] Wrap in try/catch with McpError
-  - [ ] Export `registerCaptureWindow(server)` function
-- [ ] Register tool in server (`src/server.ts`)
-  - [ ] Import `registerCaptureWindow`
-  - [ ] Call registration in `createServer()`
-- [ ] Test window capture
-  - [ ] List windows to get valid window ID
-  - [ ] Capture specific window
-  - [ ] Verify file created at returned path
-  - [ ] Open image and verify it matches window
-  - [ ] Check image dimensions match window bounds
-- [ ] Test error handling
-  - [ ] Capture with invalid window ID
-  - [ ] Close window between list and capture
-  - [ ] Capture minimized window
-  - [ ] Custom output path (valid and invalid)
-- [ ] Test Retina displays
-  - [ ] Verify image resolution (2x physical pixels)
-  - [ ] Check `scaleFactor` handling
-  - [ ] Ensure image quality acceptable
+- [x] Define capture types (`src/types.ts`)
+  - [x] `CaptureWindowParams` (window_id, mode, output_path)
+  - [x] `CaptureWindowResponse` (success, file_path, window)
+  - [x] `CaptureMode` enum/type ('full' | 'content')
+- [x] Implement capture_window tool (`src/tools/capture-window.ts`)
+  - [x] Import `Window` from node-screenshots
+  - [x] Import `openWindows` from get-windows (for metadata)
+  - [x] Define Zod schema with parameters
+  - [x] Implement handler function
+  - [x] Find window by ID in `Window.all()`
+  - [x] Handle window not found error
+  - [x] Capture image with `captureImageSync()`
+  - [x] Determine output path (temp dir if not specified)
+  - [x] Save PNG with `fs.writeFileSync()` (awaited toPng())
+  - [x] Get rich metadata from get-windows
+  - [x] Return success response with file path
+  - [x] Wrap in try/catch with McpError
+  - [x] Export `registerCaptureWindow(server)` function
+- [x] Register tool in server (`src/server.ts`)
+  - [x] Import `registerCaptureWindow`
+  - [x] Call registration in `createServer()`
+- [x] Test window capture
+  - [x] List windows to get valid window ID
+  - [x] Capture specific window
+  - [x] Verify file created at returned path
+  - [x] Open image and verify it matches window
+  - [x] Check image dimensions match window bounds
+- [x] Test error handling
+  - [x] Capture with invalid window ID
+  - [x] Close window between list and capture
+  - [x] Capture minimized window
+  - [x] Custom output path (valid and invalid)
+- [x] Test Retina displays
+  - [x] Verify image resolution (2x physical pixels)
+  - [x] Check `scaleFactor` handling
+  - [x] Ensure image quality acceptable
 
 ---
 

@@ -10,6 +10,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { registerListWindows } from './tools/list-windows.js';
+import { registerCaptureWindow } from './tools/capture-window.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -26,7 +27,7 @@ export function createServer(): McpServer {
 
   // Register tools
   registerListWindows(server);
-  // Phase 3: registerCaptureWindow(server);
+  registerCaptureWindow(server);
   // Phase 4: registerCaptureDisplay(server);
 
   return server;
