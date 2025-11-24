@@ -1,7 +1,7 @@
 # Implementation Plan: mac-vision-mcp
 
 **Last Updated:** November 24, 2025
-**Status:** Phase 5 Complete (MVP features done) - Optional: Phase 6 Testing
+**Status:** Phase 5 Complete (MVP features done) - Phase 6 Skipped - Ready for Phase 7
 **Architecture:** Pure TypeScript/Node.js with native addons
 
 ---
@@ -305,56 +305,56 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ---
 
-## Phase 6: Testing & Validation
+## Phase 6: Testing & Validation ~~(SKIPPED)~~
 
-**Objective:** Comprehensive testing across macOS versions and architectures.
+**Objective:** ~~Comprehensive testing across macOS versions and architectures.~~
 
-**Deliverable:** Validated functionality on target platforms.
+**Deliverable:** ~~Validated functionality on target platforms.~~
 
 **Testing:**
-- macOS 12, 13, 14, 15
-- Intel and Apple Silicon
-- Various window managers and apps
-- Multi-monitor configurations
+- ~~macOS 12, 13, 14, 15~~
+- ~~Intel and Apple Silicon~~
+- ~~Various window managers and apps~~
+- ~~Multi-monitor configurations~~
 
 ### Tasks
 
-- [ ] Platform testing matrix
-  - [ ] Test on macOS 12 (Monterey)
-  - [ ] Test on macOS 13 (Ventura)
-  - [ ] Test on macOS 14 (Sonoma)
-  - [ ] Test on macOS 15 (Sequoia)
-  - [ ] Test on Intel Mac
-  - [ ] Test on Apple Silicon Mac
-- [ ] Application compatibility testing
-  - [ ] Chrome/Chromium windows
-  - [ ] Safari windows
-  - [ ] Terminal/iTerm windows
-  - [ ] Electron apps (VS Code, etc.)
-  - [ ] Native macOS apps
-  - [ ] Full-screen apps
-- [ ] MCP client testing
-  - [ ] Test with Claude Code
-  - [ ] Test with Cursor
-  - [ ] Test with custom MCP client
-  - [ ] Verify tool discovery
-  - [ ] Check parameter passing
-  - [ ] Validate response format
-- [ ] Performance testing
-  - [ ] Window listing < 500ms
-  - [ ] Window capture < 2s
-  - [ ] Display capture < 3s
-  - [ ] Memory usage reasonable
-  - [ ] No memory leaks
-- [ ] Stress testing
-  - [ ] 50+ windows open
-  - [ ] Rapid consecutive captures
-  - [ ] Very large displays (5K+)
-  - [ ] Multiple displays (3+)
-- [ ] Document test results
-  - [ ] Create test matrix spreadsheet
-  - [ ] Note any platform-specific issues
-  - [ ] Document workarounds
+- ~~[ ] Platform testing matrix~~
+  - ~~[ ] Test on macOS 12 (Monterey)~~
+  - ~~[ ] Test on macOS 13 (Ventura)~~
+  - ~~[ ] Test on macOS 14 (Sonoma)~~
+  - ~~[ ] Test on macOS 15 (Sequoia)~~
+  - ~~[ ] Test on Intel Mac~~
+  - ~~[ ] Test on Apple Silicon Mac~~
+- ~~[ ] Application compatibility testing~~
+  - ~~[ ] Chrome/Chromium windows~~
+  - ~~[ ] Safari windows~~
+  - ~~[ ] Terminal/iTerm windows~~
+  - ~~[ ] Electron apps (VS Code, etc.)~~
+  - ~~[ ] Native macOS apps~~
+  - ~~[ ] Full-screen apps~~
+- ~~[ ] MCP client testing~~
+  - ~~[ ] Test with Claude Code~~
+  - ~~[ ] Test with Cursor~~
+  - ~~[ ] Test with custom MCP client~~
+  - ~~[ ] Verify tool discovery~~
+  - ~~[ ] Check parameter passing~~
+  - ~~[ ] Validate response format~~
+- ~~[ ] Performance testing~~
+  - ~~[ ] Window listing < 500ms~~
+  - ~~[ ] Window capture < 2s~~
+  - ~~[ ] Display capture < 3s~~
+  - ~~[ ] Memory usage reasonable~~
+  - ~~[ ] No memory leaks~~
+- ~~[ ] Stress testing~~
+  - ~~[ ] 50+ windows open~~
+  - ~~[ ] Rapid consecutive captures~~
+  - ~~[ ] Very large displays (5K+)~~
+  - ~~[ ] Multiple displays (3+)~~
+- ~~[ ] Document test results~~
+  - ~~[ ] Create test matrix spreadsheet~~
+  - ~~[ ] Note any platform-specific issues~~
+  - ~~[ ] Document workarounds~~
 
 ---
 
