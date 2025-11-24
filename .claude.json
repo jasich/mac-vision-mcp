@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mac-vision": {
+      "command": "node",
+      "args": ["./dist/index.js"]
+    }
+  }
+}

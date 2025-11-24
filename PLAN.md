@@ -1,7 +1,7 @@
 # Implementation Plan: mac-vision-mcp
 
 **Last Updated:** November 24, 2025
-**Status:** Phase 0 Complete - Ready for Phase 1
+**Status:** Phase 1 Complete - Ready for Phase 2
 **Architecture:** Pure TypeScript/Node.js with native addons
 
 ---
@@ -77,35 +77,35 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ### Tasks
 
-- [ ] Implement permission checking (`src/permissions.ts`)
-  - [ ] Import `hasScreenCapturePermission`
-  - [ ] Check permission on startup
-  - [ ] Display helpful error message if denied
-  - [ ] Log success message to stderr
-  - [ ] Export `checkPermissions()` function
-- [ ] Implement MCP server setup (`src/server.ts`)
-  - [ ] Create `McpServer` instance
-  - [ ] Configure server name: `mac-vision-mcp`
-  - [ ] Set version from package.json
-  - [ ] Export `createServer()` function
-- [ ] Implement main entry point (`src/index.ts`)
-  - [ ] Import server creation and permissions
-  - [ ] Call `checkPermissions()` on startup
-  - [ ] Create server instance
-  - [ ] Setup `StdioServerTransport`
-  - [ ] Connect server to transport
-  - [ ] Handle SIGINT for clean shutdown
-  - [ ] Catch and log fatal errors
-- [ ] Test server startup
-  - [ ] Build project: `npm run build`
-  - [ ] Run directly: `node dist/index.js`
-  - [ ] Verify permission check executes
-  - [ ] Verify no permission errors if granted
-- [ ] Test MCP integration
-  - [ ] Add to `.claude.json` or `mcp.json`
-  - [ ] Restart Claude Code/Cursor
-  - [ ] Verify server appears in MCP list
-  - [ ] Check stderr logs for startup messages
+- [x] Implement permission checking (`src/permissions.ts`)
+  - [x] Import `hasScreenCapturePermission`
+  - [x] Check permission on startup
+  - [x] Display helpful error message if denied
+  - [x] Log success message to stderr
+  - [x] Export `checkPermissions()` function
+- [x] Implement MCP server setup (`src/server.ts`)
+  - [x] Create `McpServer` instance
+  - [x] Configure server name: `mac-vision-mcp`
+  - [x] Set version from package.json
+  - [x] Export `createServer()` function
+- [x] Implement main entry point (`src/index.ts`)
+  - [x] Import server creation and permissions
+  - [x] Call `checkPermissions()` on startup
+  - [x] Create server instance
+  - [x] Setup `StdioServerTransport`
+  - [x] Connect server to transport
+  - [x] Handle SIGINT for clean shutdown
+  - [x] Catch and log fatal errors
+- [x] Test server startup
+  - [x] Build project: `npm run build`
+  - [x] Run directly: `node dist/index.js`
+  - [x] Verify permission check executes
+  - [x] Verify no permission errors if granted
+- [x] Test MCP integration
+  - [x] Add to `.claude.json` or `mcp.json`
+  - [x] Restart Claude Code/Cursor
+  - [x] Verify server appears in MCP list
+  - [x] Check stderr logs for startup messages
 
 ---
 

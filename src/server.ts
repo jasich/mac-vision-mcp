@@ -6,11 +6,21 @@
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '../package.json'), 'utf-8')
+);
 
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'mac-vision-mcp',
-    version: '0.1.0',
+    version: packageJson.version,
   });
 
   // Tools will be registered here in subsequent phases
