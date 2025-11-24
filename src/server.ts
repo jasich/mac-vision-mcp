@@ -9,6 +9,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { registerListWindows } from './tools/list-windows.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -23,8 +24,8 @@ export function createServer(): McpServer {
     version: packageJson.version,
   });
 
-  // Tools will be registered here in subsequent phases
-  // Phase 2: registerListWindows(server);
+  // Register tools
+  registerListWindows(server);
   // Phase 3: registerCaptureWindow(server);
   // Phase 4: registerCaptureDisplay(server);
 

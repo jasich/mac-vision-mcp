@@ -1,7 +1,7 @@
 # Implementation Plan: mac-vision-mcp
 
 **Last Updated:** November 24, 2025
-**Status:** Phase 1 Complete - Ready for Phase 2
+**Status:** Phase 2 Complete - Ready for Phase 3
 **Architecture:** Pure TypeScript/Node.js with native addons
 
 ---
@@ -122,34 +122,35 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ### Tasks
 
-- [ ] Define window types (`src/types.ts`)
-  - [ ] `WindowInfo` interface (id, title, app, bounds, display)
-  - [ ] `Bounds` interface (x, y, width, height)
-  - [ ] `ListWindowsResponse` interface
-- [ ] Implement list_windows tool (`src/tools/list-windows.ts`)
-  - [ ] Import `openWindows` from get-windows
-  - [ ] Define Zod schema (no parameters)
-  - [ ] Implement handler function
-  - [ ] Call `openWindows()` to get window list
-  - [ ] Map to standard WindowInfo format
-  - [ ] Calculate display index from bounds (optional)
-  - [ ] Return JSON with windows array
-  - [ ] Wrap in try/catch with McpError
-  - [ ] Export `registerListWindows(server)` function
-- [ ] Register tool in server (`src/server.ts`)
-  - [ ] Import `registerListWindows`
-  - [ ] Call registration in `createServer()`
-- [ ] Test window listing
-  - [ ] Open multiple app windows (Chrome, Terminal, etc.)
-  - [ ] Call `list_windows` via MCP client
-  - [ ] Verify all windows returned
-  - [ ] Check metadata accuracy (title, app name)
-  - [ ] Verify bounds are reasonable
-- [ ] Test edge cases
-  - [ ] Minimized windows (should/shouldn't appear?)
-  - [ ] Hidden windows
-  - [ ] Multiple monitors (negative x/y values)
-  - [ ] Windows without titles
+- [x] Define window types (`src/types.ts`)
+  - [x] `WindowInfo` interface (id, title, app, bounds, display)
+  - [x] `Bounds` interface (x, y, width, height)
+  - [x] `ListWindowsResponse` interface
+- [x] Implement list_windows tool (`src/tools/list-windows.ts`)
+  - [x] Import `openWindows` from get-windows
+  - [x] Define Zod schema (no parameters)
+  - [x] Implement handler function
+  - [x] Call `openWindows()` to get window list
+  - [x] Filter out system windows (WindowManager, gesture overlays, small windows)
+  - [x] Map to standard WindowInfo format
+  - [x] Calculate display index from bounds (optional)
+  - [x] Return JSON with windows array
+  - [x] Wrap in try/catch with McpError
+  - [x] Export `registerListWindows(server)` function
+- [x] Register tool in server (`src/server.ts`)
+  - [x] Import `registerListWindows`
+  - [x] Call registration in `createServer()`
+- [x] Test window listing
+  - [x] Open multiple app windows (Chrome, Terminal, etc.)
+  - [x] Call `list_windows` via MCP client
+  - [x] Verify all windows returned
+  - [x] Check metadata accuracy (title, app name)
+  - [x] Verify bounds are reasonable
+- [x] Test edge cases
+  - [x] Minimized windows (should/shouldn't appear?)
+  - [x] Hidden windows
+  - [x] Multiple monitors (negative x/y values)
+  - [x] Windows without titles
 
 ---
 
