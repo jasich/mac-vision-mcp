@@ -35,6 +35,14 @@
     "screen-capture"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasich/mac-vision-mcp.git"
+  },
+  "homepage": "https://github.com/jasich/mac-vision-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/jasich/mac-vision-mcp/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.22.0",
     "get-windows": "^9.2.3",
