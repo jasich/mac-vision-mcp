@@ -1402,8 +1402,134 @@ console.error('[ERROR] Full stack trace:', error);
 
 ---
 
+## 8. Chrome Tab-Specific Capture
+
+### The Problem
+
+Browsers don't maintain pixel images of inactive tabs—they only render content when the tab is visible. This makes capturing a specific Chrome tab (when not active) fundamentally challenging.
+
+### Solution: AppleScript/JXA + Window Capture
+
+Use AppleScript to switch to the desired tab, then capture with existing window tools.
+
+**Find and switch to tab by title:**
+```applescript
+tell application "Google Chrome"
+    activate
+    repeat with w in windows
+        set i to 0
+        repeat with t in tabs of w
+            set i to i + 1
+            if title of t contains "target" then
+                set active tab index of w to i
+                set index of w to 1  -- bring window to front
+                perform action "AXRaise" of (window 1)
+            end if
+        end repeat
+    end repeat
+end tell
+```
+
+**Find by URL:**
+```applescript
+tell application "Google Chrome"
+    activate
+    repeat with w in windows
+        set i to 0
+        repeat with t in tabs of w
+            set i to i + 1
+            if URL of t contains "github.com" then
+                set active tab index of w to i
+                set index of w to 1
+            end if
+        end repeat
+    end repeat
+end tell
+```
+
+**Get all tabs (for enumeration):**
+```applescript
+tell application "Google Chrome"
+    set tabList to {}
+    repeat with w in windows
+        repeat with t in tabs of w
+            set end of tabList to {title:title of t, url:URL of t}
+        end repeat
+    end repeat
+    return tabList
+end tell
+```
+
+### Node.js Integration
+
+Execute via `child_process`:
+```typescript
+import { execSync } from 'child_process';
+
+function switchChromeTab(titleOrUrl: string, matchBy: 'title' | 'url' = 'title'): void {
+  const prop = matchBy === 'title' ? 'title' : 'URL';
+  const script = `
+    tell application "Google Chrome"
+      activate
+      repeat with w in windows
+        set i to 0
+        repeat with t in tabs of w
+          set i to i + 1
+          if ${prop} of t contains "${titleOrUrl}" then
+            set active tab index of w to i
+            set index of w to 1
+            return true
+          end if
+        end repeat
+      end repeat
+      return false
+    end tell
+  `;
+  execSync(`osascript -e '${script}'`);
+}
+```
+
+### Proposed MCP Tool: `capture_chrome_tab`
+
+**Parameters:**
+- `match` (required): String to match in tab title or URL
+- `match_by` (optional): "title" | "url" (default: "title")
+
+**Flow:**
+1. Save current active window/tab state
+2. Find and switch to matching Chrome tab via AppleScript
+3. Brief delay for render (50-100ms)
+4. Capture Chrome window screenshot
+5. Optionally restore previous tab
+
+**Trade-offs:**
+- ✅ Works reliably across Chrome versions
+- ✅ No Chrome extension required
+- ✅ No remote debugging setup
+- ⚠️ Causes brief visual flicker
+- ⚠️ Requires "Automation" permission for Terminal/app
+
+### Alternative Approaches (Not Recommended)
+
+| Approach | Limitation |
+|----------|------------|
+| Chrome DevTools Protocol | Requires `--remote-debugging-port`, tab still needs foreground |
+| Chrome Extension | Complex setup, `captureVisibleTab` only works for active tab |
+| Puppeteer (M131+) | Requires separate headless Chrome instance |
+| html2canvas injection | Unreliable rendering, breaks on many sites |
+
+### References
+
+- [AppleScript: Switch Chrome tabs](https://superuser.com/questions/263198/switch-between-google-chrome-tabs-using-applescript)
+- [AppleScript: Find tab by title](https://gist.github.com/whoaitsaimz/50366af12a8b231321ea66c8c9e0b0e2)
+- [Puppeteer background screenshots (M131+)](https://github.com/puppeteer/puppeteer/pull/13336)
+
+---
+
 ## Conclusion
 
 Pure TypeScript/Node.js stack using **node-screenshots + get-windows** provides optimal solution for mac-vision-mcp. All technical requirements validated, packages actively maintained, and distribution via npm aligns with MCP server ecosystem standards.
+
+Chrome tab-specific capture can be achieved via AppleScript integration with minimal user friction.
 
 **Ready for implementation.**

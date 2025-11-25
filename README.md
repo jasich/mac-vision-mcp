@@ -301,7 +301,7 @@ To test your local development build with Claude Code or another MCP client:
      "mcpServers": {
        "mac-vision": {
          "command": "node",
-         "args": ["/Users/jason/code/personal/mac-vision-mcp/dist/index.js"]
+         "args": ["/path/to/mac-vision-mcp/dist/index.js"]
        }
      }
    }
@@ -314,7 +314,7 @@ To test your local development build with Claude Code or another MCP client:
    npm run build  # Rebuild after code changes
    ```
 
-**Note:** Replace `/Users/jason/code/personal/mac-vision-mcp` with your actual absolute path to the project.
+**Note:** Replace `/path/to/mac-vision-mcp` with your actual absolute path to the project.
 
 ### Testing with MCP Inspector
 
