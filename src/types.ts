@@ -96,3 +96,31 @@ export interface MultiDisplayResponse {
   success: boolean;
   captures: DisplayCapture[];
 }
+
+/**
+ * Parameters for capture_windows tool (multi-window)
+ */
+export interface CaptureWindowsParams {
+  window_ids: string[];
+  mode?: CaptureMode;
+  output_dir?: string;
+}
+
+/**
+ * Individual window capture result
+ */
+export interface WindowCaptureResult {
+  window_id: string;
+  success: boolean;
+  file_path?: string;
+  error?: string;
+  window?: WindowMetadata;
+}
+
+/**
+ * Response for capture_windows tool (multi-window)
+ */
+export interface CaptureWindowsResponse {
+  success: boolean;
+  captures: WindowCaptureResult[];
+}

@@ -48,7 +48,7 @@ On first run, macOS will prompt you to grant Screen Recording permission:
 
 #### For Claude Code
 
-Add to `.claude.json` in your project:
+Add to `.mcp.json` in your project:
 
 ```json
 {

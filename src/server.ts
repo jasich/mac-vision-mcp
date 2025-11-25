@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { registerListWindows } from './tools/list-windows.js';
 import { registerCaptureWindow } from './tools/capture-window.js';
+import { registerCaptureWindows } from './tools/capture-windows.js';
 import { registerCaptureDisplay } from './tools/capture-display.js';
 
 // Read version from package.json
@@ -29,6 +30,7 @@ export function createServer(): McpServer {
   // Register tools
   registerListWindows(server);
   registerCaptureWindow(server);
+  registerCaptureWindows(server);
   registerCaptureDisplay(server);
 
   return server;
