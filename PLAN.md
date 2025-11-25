@@ -429,42 +429,128 @@ Phased implementation plan for mac-vision-mcp MCP server. Each phase delivers te
 
 ### Tasks
 
-- [ ] Pre-publish checklist
-  - [ ] Version number set (1.0.0)
-  - [ ] All tests passing
-  - [ ] Documentation complete
-  - [ ] LICENSE file present
-  - [ ] README.md polished
-  - [ ] package.json metadata complete
-  - [ ] Keywords for npm search
-- [ ] Prepare npm package
-  - [ ] Run `npm pack` to preview
-  - [ ] Check included files
-  - [ ] Verify package size < 10MB
-  - [ ] Test local install: `npm install -g ./mac-vision-mcp-1.0.0.tgz`
-- [ ] Setup npm account
-  - [ ] Create/login to npm account
-  - [ ] Setup 2FA
-  - [ ] Verify email
-- [ ] Publish to npm
-  - [ ] Run `npm publish`
-  - [ ] Verify package appears on npmjs.com
-  - [ ] Test install: `npm install -g mac-vision-mcp`
-  - [ ] Test via npx: `npx -y mac-vision-mcp`
-- [ ] GitHub updates
-  - [ ] Add remote origin
-  - [ ] Push code
-  - [ ] Add description and topics
-- [ ] Create GitHub release
-  - [ ] Tag version v1.0.0
-  - [ ] Write release notes
-  - [ ] Attach tarball (optional)
-  - [ ] Mark as latest release
-- [ ] Post-publish verification
-  - [ ] Fresh install on clean Mac
-  - [ ] Follow README instructions
-  - [ ] Verify all features work
-  - [ ] Test with Claude Code
+#### 8.1 npm Account Setup (First Time Only)
+- [ ] Create npm account at https://www.npmjs.com/signup
+- [ ] Verify email address
+- [ ] Enable 2FA (required for publishing)
+  - Go to Account Settings > Two-Factor Authentication
+  - Use authenticator app (not SMS)
+- [ ] Login from terminal:
+  ```bash
+  npm login
+  npm whoami  # verify: should print your username
+  ```
+
+#### 8.2 Pre-Publish Checklist
+- [ ] Version number set appropriately
+  - [ ] Update version in package.json (currently 0.1.0)
+  - [ ] Consider 1.0.0 for first public release
+- [ ] package.json metadata complete:
+  - [ ] `name` - unique on npm ✓
+  - [ ] `description` - clear and searchable ✓
+  - [ ] `keywords` - relevant terms ✓
+  - [ ] `license` - MIT ✓
+  - [ ] `repository` - add GitHub URL
+  - [ ] `homepage` - add GitHub URL
+  - [ ] `bugs` - add issues URL
+- [ ] LICENSE file present ✓
+- [ ] README.md polished ✓
+- [ ] CHANGELOG.md updated ✓
+- [ ] Clean build succeeds: `rm -rf dist && npm run build`
+
+#### 8.3 Test Package Locally
+- [ ] Create tarball without publishing:
+  ```bash
+  npm pack
+  # Creates: mac-vision-mcp-X.X.X.tgz
+  ```
+- [ ] Inspect contents:
+  ```bash
+  tar -tzf mac-vision-mcp-*.tgz
+  # Should show: package/dist/*, package/README.md, package/LICENSE
+  ```
+- [ ] Check package size (should be < 5MB, ideally < 1MB)
+- [ ] Test local install:
+  ```bash
+  npm install -g ./mac-vision-mcp-*.tgz
+  mac-vision-mcp  # test it runs
+  npm uninstall -g mac-vision-mcp
+  rm mac-vision-mcp-*.tgz
+  ```
+
+#### 8.4 Publish to npm
+- [ ] Final clean build:
+  ```bash
+  rm -rf dist && npm run build
+  ```
+- [ ] Publish (will prompt for 2FA code):
+  ```bash
+  npm publish
+  ```
+- [ ] If name taken, options:
+  - Try scoped: rename to `@username/mac-vision-mcp` and `npm publish --access public`
+  - Or choose different name
+- [ ] Verify on npm: https://www.npmjs.com/package/mac-vision-mcp
+
+#### 8.5 Post-Publish Verification
+- [ ] Test fresh global install:
+  ```bash
+  npm install -g mac-vision-mcp
+  mac-vision-mcp  # verify runs
+  ```
+- [ ] Test via npx (no install):
+  ```bash
+  npx -y mac-vision-mcp
+  ```
+- [ ] Test MCP integration with Claude Code:
+  - Update config to use `npx -y mac-vision-mcp`
+  - Restart Claude Code
+  - Test list_windows tool
+
+#### 8.6 GitHub Repository Setup
+- [ ] Create GitHub repository (if not exists)
+- [ ] Add remote and push:
+  ```bash
+  git remote add origin git@github.com:USERNAME/mac-vision-mcp.git
+  git push -u origin master
+  ```
+- [ ] Add repository metadata:
+  - Description: "MCP server for macOS screenshot capture"
+  - Topics: mcp, macos, screenshot, typescript, claude
+  - Website: npm package URL
+
+#### 8.7 Create GitHub Release
+- [ ] Tag the release:
+  ```bash
+  git tag -a v1.0.0 -m "Initial public release"
+  git push --tags
+  ```
+- [ ] Create release on GitHub:
+  - Go to Releases > Draft new release
+  - Choose tag: v1.0.0
+  - Title: "v1.0.0 - Initial Release"
+  - Description: Copy from CHANGELOG.md
+  - Mark as latest release
+  - Publish
+
+#### 8.8 Update package.json with GitHub URLs
+- [ ] Add repository info:
+  ```json
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/USERNAME/mac-vision-mcp.git"
+  },
+  "homepage": "https://github.com/USERNAME/mac-vision-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/USERNAME/mac-vision-mcp/issues"
+  }
+  ```
+- [ ] Publish patch version with updated URLs:
+  ```bash
+  npm version patch
+  npm publish
+  git push --tags
+  ```
 
 ---
 

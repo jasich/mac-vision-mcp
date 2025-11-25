@@ -1526,6 +1526,171 @@ function switchChromeTab(titleOrUrl: string, matchBy: 'title' | 'url' = 'title')
 
 ---
 
+## 9. Publishing to npm
+
+### Prerequisites
+
+1. **npm Account**: Create at https://www.npmjs.com/signup
+2. **Enable 2FA**: Required for publishing - go to Account Settings > Two-Factor Authentication
+3. **Verify Email**: Check your email is verified in Account Settings
+
+### First-Time Setup
+
+```bash
+# Login to npm (opens browser for 2FA)
+npm login
+
+# Verify you're logged in
+npm whoami
+```
+
+### Pre-Publish Checklist
+
+**package.json requirements:**
+```json
+{
+  "name": "mac-vision-mcp",        // Must be unique on npm
+  "version": "1.0.0",              // Semantic versioning
+  "description": "...",            // Shows in npm search
+  "main": "./dist/index.js",       // Entry point (optional for bin-only)
+  "bin": {
+    "mac-vision-mcp": "./dist/index.js"  // CLI command name
+  },
+  "files": [                       // What gets published
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["mcp", "macos", ...], // npm search keywords
+  "license": "MIT",
+  "repository": {                  // GitHub link on npm page
+    "type": "git",
+    "url": "git+https://github.com/USER/mac-vision-mcp.git"
+  },
+  "homepage": "https://github.com/USER/mac-vision-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/USER/mac-vision-mcp/issues"
+  }
+}
+```
+
+### Test Package Locally
+
+```bash
+# 1. Build the project
+npm run build
+
+# 2. Create tarball (doesn't publish)
+npm pack
+
+# Output: mac-vision-mcp-1.0.0.tgz
+
+# 3. Inspect what's included
+tar -tzf mac-vision-mcp-1.0.0.tgz
+
+# 4. Test install globally from tarball
+npm install -g ./mac-vision-mcp-1.0.0.tgz
+
+# 5. Test the CLI works
+mac-vision-mcp --help  # or just run it
+
+# 6. Uninstall test version
+npm uninstall -g mac-vision-mcp
+
+# 7. Clean up tarball
+rm mac-vision-mcp-1.0.0.tgz
+```
+
+### Publishing
+
+```bash
+# Ensure clean build
+rm -rf dist && npm run build
+
+# Publish to npm (will prompt for 2FA code)
+npm publish
+
+# For first publish of scoped package (@username/pkg):
+npm publish --access public
+```
+
+### After Publishing
+
+```bash
+# Verify on npm
+open https://www.npmjs.com/package/mac-vision-mcp
+
+# Test fresh install
+npm install -g mac-vision-mcp
+
+# Test via npx (no install)
+npx -y mac-vision-mcp
+```
+
+### Version Updates
+
+```bash
+# Bump version (updates package.json + creates git tag)
+npm version patch  # 1.0.0 -> 1.0.1 (bug fixes)
+npm version minor  # 1.0.0 -> 1.1.0 (new features)
+npm version major  # 1.0.0 -> 2.0.0 (breaking changes)
+
+# Then publish
+npm publish
+
+# Push tags to GitHub
+git push --tags
+```
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| "Package name too similar" | Choose unique name or use scoped: `@username/mac-vision-mcp` |
+| "You must enable 2FA" | Enable at npmjs.com > Account > Two-Factor Auth |
+| "Not found: dist/index.js" | Run `npm run build` before publish |
+| Package too large | Check `files` array, add `.npmignore` |
+| "Cannot publish over existing" | Bump version first |
+
+### .npmignore (Optional)
+
+If you need finer control than `files` array:
+
+```
+# .npmignore
+src/
+*.ts
+!dist/**/*
+node_modules/
+.git/
+*.log
+.DS_Store
+tsconfig.json
+```
+
+**Note:** If `files` is specified in package.json, `.npmignore` is mostly unnecessary.
+
+### Unpublishing (Emergency Only)
+
+```bash
+# Within 72 hours of publish
+npm unpublish mac-vision-mcp@1.0.0
+
+# Deprecate instead (preferred)
+npm deprecate mac-vision-mcp@1.0.0 "Critical bug, use 1.0.1"
+```
+
+### Scoped vs Unscoped Packages
+
+| Type | Example | Pros | Cons |
+|------|---------|------|------|
+| Unscoped | `mac-vision-mcp` | Shorter install command | Name must be globally unique |
+| Scoped | `@jason/mac-vision-mcp` | Namespace prevents conflicts | Longer name, `--access public` needed |
+
+**Recommendation:** Use unscoped if available, scoped if name taken.
+
+---
+
 ## Conclusion
 
 Pure TypeScript/Node.js stack using **node-screenshots + get-windows** provides optimal solution for mac-vision-mcp. All technical requirements validated, packages actively maintained, and distribution via npm aligns with MCP server ecosystem standards.
