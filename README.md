@@ -1,6 +1,14 @@
 # mac-vision-mcp
 
+[![npm version](https://img.shields.io/npm/v/mac-vision-mcp.svg)](https://www.npmjs.com/package/mac-vision-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![macOS](https://img.shields.io/badge/macOS-12.0%2B-blue)
+
 A Model Context Protocol (MCP) server that enables AI coding agents to capture screenshots of macOS windows and displays on demand.
+
+## Why
+
+LLMs are amazing at using images for context.  You can feed image files to an LLM and it can do things like analyze a design or read text.  I find myself constantly wanting to "show" LLMs what I'm looking at, but I found it cumbersome to take a screenshot, find the file, and give the path to the LLM.  Additionally I ended up with **thousands** of screenshots over time that I needed to manage.  So I thought, why can't the LLM just do this itself?  And that's what led to this project.
 
 ## Features
 
@@ -64,6 +72,21 @@ Add to `.mcp.json` in your project:
 #### For Cursor
 
 Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "mac-vision": {
+      "command": "npx",
+      "args": ["-y", "mac-vision-mcp"]
+    }
+  }
+}
+```
+
+#### For Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -141,6 +164,46 @@ Capture a screenshot of a specific window.
 }
 ```
 
+### `capture_windows`
+
+Capture screenshots of multiple windows at once. Useful when you need to see several windows simultaneously.
+
+**Parameters:**
+
+- `window_ids` (required, string[]) - Array of Window IDs from `list_windows`
+- `mode` (optional, string) - Capture mode: `"full"` or `"content"` (default: `"full"`)
+- `output_dir` (optional, string) - Custom output directory (default: temp directory)
+
+**Returns:**
+
+```json
+{
+  "success": true,
+  "captures": [
+    {
+      "window_id": "12345",
+      "success": true,
+      "file_path": "/tmp/screenshot_12345.png",
+      "window": {
+        "id": "12345",
+        "title": "Chrome - Documentation",
+        "app": "Google Chrome"
+      }
+    },
+    {
+      "window_id": "67890",
+      "success": true,
+      "file_path": "/tmp/screenshot_67890.png",
+      "window": {
+        "id": "67890",
+        "title": "VS Code",
+        "app": "Code"
+      }
+    }
+  ]
+}
+```
+
 ### `capture_display`
 
 Capture entire display(s).
@@ -175,38 +238,6 @@ Capture entire display(s).
     }
   ]
 }
-```
-
-## Usage Examples
-
-### Example 1: List All Windows
-
-```javascript
-// AI agent calls list_windows
-// Returns array of all open windows with metadata
-```
-
-### Example 2: Capture Specific Window
-
-```javascript
-// 1. AI agent calls list_windows
-// 2. AI agent identifies target window (e.g., Chrome with "error" in title)
-// 3. AI agent calls capture_window with window_id
-// 4. Screenshot saved to temp directory
-```
-
-### Example 3: Capture Primary Display
-
-```javascript
-// AI agent calls capture_display with display_id: 0
-// Full screen screenshot saved to temp directory
-```
-
-### Example 4: Capture All Displays
-
-```javascript
-// AI agent calls capture_display without parameters
-// All displays captured and saved separately
 ```
 
 ## Troubleshooting
@@ -272,7 +303,7 @@ Capture entire display(s).
 
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/jasich/mac-vision-mcp.git
 cd mac-vision-mcp
 
 # Install dependencies
